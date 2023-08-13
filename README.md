@@ -23,17 +23,17 @@
 
 #### Functions
 
-`getDeltaTime_1` --> METHOD #1 to find delta datetime
-`getDeltaTime_2` --> METHOD #2 to find delta datetime
+`getDeltaTime_1` --> METHOD #1 to find delta datetime  
+`getDeltaTime_2` --> METHOD #2 to find delta datetime  
 `getDeltaTime_OR_TimeNow` --> METHOD #3 to find delta datetim **PREFERRED WAY**
 
 # Output Example
 
-> Now: 2023-08-12T20:38:10.667Z
-> getDeltaTime_1: 2023-08-12T21:38:10.668Z
-> getDeltaTime_2: 2023-08-12T19:38:10.668Z
-> getDeltaTime_OR_TimeNow --> Now: 2023-08-12T20:38:10.679Z
-> getDeltaTime_OR_TimeNow --> Delta future: 2023-08-12T20:43:10.679Z
+> Now: 2023-08-12T20:38:10.667Z  
+> getDeltaTime_1: 2023-08-12T21:38:10.668Z  
+> getDeltaTime_2: 2023-08-12T19:38:10.668Z  
+> getDeltaTime_OR_TimeNow --> Now: 2023-08-12T20:38:10.679Z  
+> getDeltaTime_OR_TimeNow --> Delta future: 2023-08-12T20:43:10.679Z  
 > getDeltaTime_OR_TimeNow --> Delta past: 2023-08-12T20:28:10.690Z
 >
 > ---
