@@ -21,7 +21,7 @@ String padd(int value)
 		return String(value);
 }
 
-myTimeInfo getStaleTime(myTimeInfo *timeInfo, time_t deltaSeconds = 0.0)
+myTimeInfo getDeltaTime_1(myTimeInfo *timeInfo, time_t deltaSeconds = 0)
 {
 	tmElements_t myElements = {timeInfo->my_sec, timeInfo->my_min, timeInfo->my_hour, timeInfo->my_weekDay, timeInfo->my_day, timeInfo->my_month, timeInfo->my_year - 1970};
 	time_t myTime = makeTime(myElements);
@@ -45,7 +45,7 @@ myTimeInfo getStaleTime(myTimeInfo *timeInfo, time_t deltaSeconds = 0.0)
 }
 
 // Same as the above function but returns time as timeISO8601 format
-String getTimeDelta(myTimeInfo *timeInfo, time_t deltaSeconds = 0.0)
+String getDeltaTime_2(myTimeInfo *timeInfo, time_t deltaSeconds = 0)
 {
 	tmElements_t myElements = {timeInfo->my_sec, timeInfo->my_min, timeInfo->my_hour, timeInfo->my_weekDay, timeInfo->my_day, timeInfo->my_month, timeInfo->my_year - 1970};
 	time_t myTime = makeTime(myElements);
@@ -60,19 +60,22 @@ String getTimeDelta(myTimeInfo *timeInfo, time_t deltaSeconds = 0.0)
 				  "T" + hr + ":" + min + ":" + sec + "." + padd(timeInfo->my_millis) + "Z");
 }
 
-String takTime(ESP32Time *timeObj, long deltaSeconds = 0)
+String getDeltaTime_OR_TimeNow(ESP32Time *timeObj, time_t deltaSeconds = 0)
 {
+	// This returns TimeNow as there is no deltaseconds
 	if (deltaSeconds == 0)
 	{
 		return String(timeObj->getTime("%FT%T") + "." + padd(timeObj->getMillis()) + "Z");
 	}
+
+	// This returns DeltaTime depending on deltaseconds (can be +/-)
 	else
 	{
 		myTimeInfo info = {timeObj->getSecond(), timeObj->getMinute(), timeObj->getHour(true), timeObj->getDayofWeek() + 1, timeObj->getDay(), timeObj->getMonth() + 1, timeObj->getYear(), timeObj->getMillis()};
 		tmElements_t nowElements = {info.my_sec, info.my_min, info.my_hour, info.my_weekDay, info.my_day, info.my_month, info.my_year - 1970};
 		time_t nowTime = makeTime(nowElements);
 
-		time_t deltaTime = nowTime + time_t(deltaSeconds);
+		time_t deltaTime = nowTime + deltaSeconds;
 
 		setTime(deltaTime);
 
@@ -90,30 +93,36 @@ void setup()
 	delay(2000);
 
 	// Set initial time. This is just example, prefered setting would be from NTP, NetworkTime, GPS time
-	rtc_UTC.setTime(43, 37, 20, 12, 8, 2023);
+	rtc_UTC.setTime(43, 37, 20, 12, 8, 2023); // 2023-08-12  20:37:43
 }
 
+// Loop will print time, a demonstration of RTC
 void loop()
 {
-	Serial.println("Now: " + rtc_UTC.getTime("%FT%T") + "." + padd(rtc_UTC.getMillis()) + "Z");
+	Serial.println("Now: \t\t\t\t\t\t" + rtc_UTC.getTime("%FT%T") + "." + padd(rtc_UTC.getMillis()) + "Z");
 
 	myTimeInfo info = {rtc_UTC.getSecond(), rtc_UTC.getMinute(), rtc_UTC.getHour(true), rtc_UTC.getDayofWeek() + 1, rtc_UTC.getDay(), rtc_UTC.getMonth() + 1, rtc_UTC.getYear(), rtc_UTC.getMillis()};
 
-	/*
-	myTimeInfo stale = getStaleTime(&info, 0);
+	myTimeInfo delta = getDeltaTime_1(&info, 3600);
+	String deltaTime_1 = String(delta.my_year) + "-" + padd(delta.my_month) + "-" + padd(delta.my_day) +
+						 "T" + padd(delta.my_hour) + ":" + padd(delta.my_min) + ":" + padd(delta.my_sec) + "." + padd(delta.my_millis) + "Z";
+	Serial.println("getDeltaTime_1: \t\t\t\t" + deltaTime_1);
 
-	String staleTime = String(stale.my_year) + "-" + String(stale.my_month) + "-" + String(stale.my_day) +
-					   "T" + String(stale.my_hour) + ":" + String(stale.my_min) + ":" + String(stale.my_sec) + "." + String(stale.my_millis) + "Z";
+	String deltaTime_2 = getDeltaTime_2(&info, -3600);
+	Serial.println("getDeltaTime_2: \t\t\t\t" + deltaTime_2);
 
-	Serial.println("Stale: " + staleTime);
-	*/
+	time_t ds3 = 300;  // Set delta seconds for a future datetime after 300 seconds(5 mins) have passed
+	time_t dS3 = -600; // Set delta seconds to a past datetime in 600 seconds(10 mins)
 
-	time_t deltaSeconds = 3600; // Set delta seconds
-	// time_t deltaSeconds = -300; // Set delta seconds
+	String deltaTime_3 = getDeltaTime_OR_TimeNow(&rtc_UTC);
+	Serial.println("getDeltaTime_OR_TimeNow --> Now: \t\t" + deltaTime_3);
 
-	Serial.println("Stale: " + getTimeDelta(&info, deltaSeconds));
+	deltaTime_3 = getDeltaTime_OR_TimeNow(&rtc_UTC, ds3);
+	Serial.println("getDeltaTime_OR_TimeNow --> Delta future: \t" + deltaTime_3);
 
-	delay(5000);
+	deltaTime_3 = getDeltaTime_OR_TimeNow(&rtc_UTC, dS3);
+	Serial.println("getDeltaTime_OR_TimeNow --> Delta past: \t" + deltaTime_3);
+	Serial.println("******************************************************************************************************************************\n\n");
 
-	Serial.println(takTime(&rtc_UTC, 0L));
+	// delay(5000);
 }
