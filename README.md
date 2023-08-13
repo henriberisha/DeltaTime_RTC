@@ -18,7 +18,7 @@
 
 # In the code
 
-`ESP32Time rtc_UTC;` declaring the object that will keep track of RTC
+`ESP32Time rtc_UTC;` declaring the object that will keep track of RTC  
 `rtc_UTC.setTime(...);` initializing it by setting the time
 
 #### Functions
